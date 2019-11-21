@@ -14,6 +14,6 @@
 	   eb=  cb + ab5  ;
 	   PRINT(‘eb=’   ,eb )  ;
 
-	   be  -  2*abc5 +  eb;
+	   be -  2*abc5 +  eb;
 	   PRINT(   be  )   ;
 	END.
