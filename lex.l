@@ -14,6 +14,8 @@ open_parenth                                [(]
 closed_parenth                              [)]
 colon                                       [:]
 semicolon                                   [;]
+open_quote                                   \‘
+close_quote                                  \’
 string                                      \'.*\'
 
 
@@ -27,17 +29,18 @@ string                                      \'.*\'
 "PRINT"                                         { fprintf(yyout, "%s", yytext); }
 "END."                                          { fprintf(yyout, "%s\n", yytext); }
 
-{id}                                            { fprintf(yyout, "%s ", yytext); }
-{equal}                                         { fprintf(yyout, "%s ", yytext); }
-{operator}                                      { fprintf(yyout, "%s ", yytext); }
-{number}                                        { fprintf(yyout, "%s ", yytext); }
-
-{open_parenth}                                  { fprintf(yyout, "%s ", yytext); }
-{closed_parenth}                                { fprintf(yyout, "%s ", yytext); }
+{id}                                            { fprintf(yyout, "%s", yytext); }
+{equal}                                         { fprintf(yyout, " %s ", yytext); }
+{operator}                                      { fprintf(yyout, " %s ", yytext); }
+{number}                                        { fprintf(yyout, "%s", yytext); }
+{open_quote}                                    { fprintf(yyout, "%s", yytext); }
+{close_quote}                                   { fprintf(yyout, "%s", yytext); }
+{open_parenth}                                  { fprintf(yyout, "%s", yytext); }
+{closed_parenth}                                { fprintf(yyout, "%s", yytext); }
 {semicolon}                                     { fprintf(yyout, "%s\n", yytext); }
 {comma}                                         { fprintf(yyout, "%s ", yytext); }
 {colon}                                         { fprintf(yyout, "%s ", yytext); }
-{string}                                        { fprintf(yyout, "%s ", yytext); }
+{string}                                        { fprintf(yyout, "%s", yytext); }
 
 .|\n|{comment} ;
 
