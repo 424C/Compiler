@@ -33,11 +33,12 @@ int main() { yyparse(); }
 %token CPAREN
 %token SEMICOLON
 %token COMMA
+%token STRING
 
 
 %token <number> STATE DIGIT
-%token <string> LETTER IDENTIFIER STRING
-%type <string> pname id dec print output
+%token <string> LETTER IDENTIFIER
+%type <string> pname id dec print output string
 %type <number> assign expr term factor
 
 %union {
@@ -53,7 +54,7 @@ start: PROGRAM pname semicolon var dec_list semicolon begin stat_list end { prin
     ;
 
 pname: id  { printf("pname returning\n"); }
-    |   { yyerror("program name <pname> expected."); exit(1); }
+    |   { yyerror("program name expected."); exit(1); }
     ;
 
 id: IDENTIFIER { printf("id returning: [%s]\n", $1); }
@@ -107,7 +108,11 @@ cparen: CPAREN { printf("close paren returning\n"); }
     ;
 
 output: id  { printf("output id returning\n"); }
-    |   STRING comma id { printf("string , id returning\n"); }
+    |   string comma id { printf("string , id returning\n"); }
+    ;
+
+string: STRING { printf("string returning\n"); fflush(stdin); }
+    |   { yyerror("invalid string format."); exit(1); }
     ;
 
 comma: COMMA { printf("comma returning\n"); }
@@ -145,18 +150,3 @@ end: END { printf("END. returning\n"); }
     ;
 
 %%
-
-void init()
-{
-    FILE *pfile = fopen("abc13.cpp", "a");
-    char buffer[256];
-    if (pfile == NULL)
-    {
-        perror("Error opening file.");
-    }
-    else
-    {
-        fprintf(pfile, "#include <iostream>\n Using namespace std;\n int main()\n {");
-    }
-    fclose(pfile);
-}

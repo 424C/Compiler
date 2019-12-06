@@ -3,10 +3,9 @@ Compilers
 
 use the makefile to test the compiler.
 
-1. make flex
-2. make bison
-3. make compile
-4. ./a.out
-
+1. make file (create the output.txt)
+2. make all
+3. correct output.txt errors
+4. ./a.out < output.txt
 
 use make clean to remove unneccessary files

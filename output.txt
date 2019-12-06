@@ -1,0 +1,12 @@
+PROGRAM aba13;
+VAR
+ab5, cb, be, eb: INTEGER;
+BEGIN
+ab5 = 5;
+cb = 10;
+PRINT(‘ab5 = ’, ab5);
+eb = cb + ab5;
+PRINT(‘eb = ’, eb);
+be - 2 * abc5 + eb;
+PRINT(be);
+END.

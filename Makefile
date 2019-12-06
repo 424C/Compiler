@@ -1,6 +1,12 @@
 all:
+	flex lexer.l
+	bison -d yacc.y
+	cc lex.yy.c yacc.tab.c
+	./a.out < output.txt
+
+file:
 	flex lex.l
-	gcc lex.yy.c
+	cc lex.yy.c
 	./a.out
 	cat output.txt
 
