@@ -66,21 +66,21 @@ var: VAR   { printf("var returning\n"); }
 dec_list: dec colon type    { printf("dec_list returning\n"); }
     ;
 
-dec:    IDENTIFIER comma dec    { printf("dec returning [%s]\n", $3); }
-    |   IDENTIFIER IDENTIFIER   { yyerror("two identifiers back to back without seperator. ',' expected."); exit(1); }
-    |   IDENTIFIER   { printf("identifier returning [%s]\n", $1); }
+dec:    IDENTIFIER comma dec    { printf("dec [%s]\n", $3); }
+    |   IDENTIFIER IDENTIFIER   { yyerror("two identifiers without comma. ',' expected."); exit(1); }
+    |   IDENTIFIER   { printf("identifier [%s]\n", $1); }
     ;
 
 colon: COLON   { printf("colon returning\n"); }
-    |   { yyerror("colon ':' expected."); exit(1); }
+    |   { yyerror("':' missing."); exit(1); }
     ;
 
 semicolon: SEMICOLON   { printf("semicolon returning\n"); }
-    |   { yyerror("semicolon ';' expected."); exit(1); }
+    |   { yyerror("';' missing."); exit(1); }
     ;
 
 type: INTEGER   { printf("integer returning\n"); }
-    |   { yyerror("keyword type of 'INTEGER' expected."); exit(1); }
+    |   { yyerror("keyword 'INTEGER' expected."); exit(1); }
     ;
 
 begin: BEG  { printf("BEGIN returning\n"); }
@@ -92,18 +92,18 @@ stat_list: stat semicolon   { printf("stat ; returning\n"); }
     ;
 
 stat:  print     { printf("stat returning\n"); }
-    |  assign    { printf("assign returning value=%d\n",$1); }
+    |  assign    { printf("assign value=%d\n",$1); }
     ;
 
 print:   PRINT oparen output cparen   { printf("print returning\n");}
     ;
 
 oparen: OPAREN { printf("open paren returning\n"); }
-    |   { yyerror("open parenthesis '(' expected."); exit(1); }
+    |   { yyerror("'(' missing."); exit(1); }
     ;
 
 cparen: CPAREN { printf("close paren returning\n"); }
-    |   { yyerror("closed parenthesis ')' expected."); exit(1); }
+    |   { yyerror("')' missing."); exit(1); }
     ;
 
 output: id  { printf("output id returning\n"); }
@@ -115,11 +115,11 @@ comma: COMMA { printf("comma returning\n"); }
     ;
 
 assign: id assignment expr { printf("assign returning $1=%s $3=%d\n",$1,$3); $$ = $3; }
-    |   { yyerror("something went wrong during assignment."); exit(1); }
+    |   { yyerror("assignment failed."); exit(1); }
     ;
 
 assignment: ASSIGNMENT { printf("assignment returning\n"); }
-    |   { yyerror("assignment operator '=' expected."); exit(1); }
+    |   { yyerror("operator '=' missing."); exit(1); }
     ;
 
 expr:  term         { printf("expr term returning\n"); }
