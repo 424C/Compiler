@@ -13,7 +13,6 @@ void print_identifiers();
 FILE * pfile;
 char identifiers[14][10];
 int identifier_count=0;
-// int main() { yyparse(); }
 %}
 
 //Various keywords
@@ -58,99 +57,99 @@ start: PROGRAM pname semicolon var dec_list semicolon begin stat_list end { prin
     |   { yyerror("keyword 'PROGRAM' expected."); exit(1); }
     ;
 
-pname: id  { printf("pname returning\n"); }
+pname: id  { printf("pname  \n"); }
     |   { yyerror("program name expected."); exit(1); }
     ;
 
-id: IDENTIFIER { printf("id returning: [%s]\n", $1); }
+id: IDENTIFIER { printf("id  : [%s]\n", $1); }
     ;
 
-var: VAR   { printf("var returning\n"); }
+var: VAR   { printf("var  \n"); }
     |   { yyerror("keyword 'VAR' expected."); exit(1); }
     ;
 
-dec_list: dec colon type    { printf("dec_list returning\n"); } { print_identifiers(); }
+dec_list: dec colon type    { printf("dec_list  \n"); } { print_identifiers(); }
     ;
 
-dec:    IDENTIFIER comma dec    { printf("dec [%s]\n", $3); } { push_identifiers($1); }
+dec:    IDENTIFIER comma dec    { printf("dec [%s]\n", $3); } { push_identifiers($1); } 
     |   IDENTIFIER IDENTIFIER   { yyerror("two identifiers without comma. ',' expected."); exit(1); }
     |   IDENTIFIER   { printf("identifier [%s]\n", $1); } { $$ = $1; push_identifiers($1);}
     ;
 
-colon: COLON   { printf("colon returning\n"); }
+colon: COLON   { printf("colon  \n"); }
     |   { yyerror("':' missing."); exit(1); }
     ;
 
-semicolon: SEMICOLON   { printf("semicolon returning\n"); }
+semicolon: SEMICOLON   { printf("semicolon  \n"); }
     |   { yyerror("';' missing."); exit(1); }
     ;
 
-type: INTEGER   { printf("integer returning\n"); }
+type: INTEGER   { printf("integer  \n"); }
     |   { yyerror("keyword 'INTEGER' expected."); exit(1); }
     ;
 
-begin: BEG  { printf("BEGIN returning\n"); }
+begin: BEG  { printf("BEGIN  \n"); }
     |   { yyerror("keyword 'BEGIN' expected."); exit(1); }
     ;
 
-stat_list: stat semicolon   { printf("stat ; returning\n"); }
-    | stat semicolon stat_list  { printf("stat ; stat_list returning\n"); }
+stat_list: stat semicolon   { printf("stat ;  \n"); }
+    | stat semicolon stat_list  { printf("stat ; stat_list  \n"); }
     ;
 
-stat:  print     { printf("stat returning\n"); }
+stat:  print     { printf("stat  \n"); }
     |  assign    { printf("assign value=%d\n",$1); }
     ;
 
-print:   PRINT oparen output cparen   { printf("print returning\n");}
+print:   PRINT oparen output cparen   { printf("print  \n");}
     ;
 
-oparen: OPAREN { printf("open paren returning\n"); }
+oparen: OPAREN { printf("open paren  \n"); }
     |   { yyerror("'(' missing."); exit(1); }
     ;
 
-cparen: CPAREN { printf("close paren returning\n"); }
+cparen: CPAREN { printf("close paren  \n"); }
     |   { yyerror("')' missing."); exit(1); }
     ;
 
-output: id  { printf("output id returning\n"); }
-    |   string comma id { printf("string , id returning\n"); }
+output: id  { printf("output id  \n"); } 
+    |   string comma id { printf("string , id  \n"); }
     ;
 
-string: STRING { printf("string returning\n"); fflush(stdin); }
+string: STRING { printf("string  \n"); fflush(stdin); }
     |   { yyerror("invalid string format."); exit(1); }
     ;
 
-comma: COMMA { printf("comma returning\n"); }
+comma: COMMA { printf("comma  \n"); }
     |   { yyerror("',' expected."); exit(1); }
     ;
 
-assign: id assignment expr { printf("assign returning $1=%s $3=%d\n",$1,$3); $$ = $3; }
+assign: id assignment expr { printf("assign   $1=%s $3=%d\n",$1,$3); $$ = $3; }
     |   { yyerror("assignment failed."); exit(1); }
     ;
 
-assignment: ASSIGNMENT { printf("assignment returning\n"); }
+assignment: ASSIGNMENT { printf("assignment  \n"); }
     |   { yyerror("operator '=' missing."); exit(1); }
     ;
 
-expr:  term         { printf("expr term returning\n"); }
-    | expr PLUS term { printf("expr + term returning\n"); $$ = $1 + $3; }
-    | expr MINUS term { printf("expr - term returning\n"); }
+expr:  term         { printf("expr term  \n"); }
+    | expr PLUS term { printf("expr + term  \n"); $$ = $1 + $3; }
+    | expr MINUS term { printf("expr - term  \n"); }
     ;
 
-term:   term TIMES factor { printf("term * factor returning\n"); $$ = $1 * $3; }
-    |   term DIVIDE factor { printf("term / factor returning\n"); }
-    |   factor          { printf("factor returning\n"); }
+term:   term TIMES factor { printf("term * factor  \n"); $$ = $1 * $3; }
+    |   term DIVIDE factor { printf("term / factor  \n"); }
+    |   factor          { printf("factor  \n"); }
     ;
 
-factor: id          { printf("factor id returning\n"); }
-    |   number      { printf("factor number returning\n"); }
-    |   '(' expr ')'{ printf("( expr ) returning\n"); }
+factor: id          { printf("factor id  \n"); }
+    |   number      { printf("factor number  \n"); }
+    |   '(' expr ')'{ printf("( expr )  \n"); }
     ;
 
-number: DIGIT   { printf("number DIGIT returning\n"); }
+number: DIGIT   { printf("number DIGIT  \n"); }
     ;
 
-end: END { printf("END. returning\n"); }
+end: END { printf("END.  \n"); }
     |   { yyerror("keyword 'END.' expected."); exit(1); }
     ;
 
@@ -186,9 +185,9 @@ void print_identifiers()
     printf("print_identifiers is called\n");
     int i;
     fprintf(pfile, " int ");
-    for(i=0; i<identifier_count-1; i++)
+    for(i=identifier_count-1; i>0; i--)
     {
         fprintf(pfile, "%s, ", identifiers[i]);
     }
-    fprintf(pfile, "%s;", identifiers[identifier_count-1]);
+    fprintf(pfile, "%s;", identifiers[0]);
 }
