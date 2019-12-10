@@ -123,7 +123,7 @@ comma: COMMA { printf("comma  \n"); }
     |   { yyerror("',' expected."); exit(1); }
     ;
 
-assign: id assignment expr { printf("assign   $1=%s $3=%d\n",$1,$3); $$ = $3; }
+assign: id assignment expr { printf("assign   $1=%s $3=%d\n",$1,$3); $<number>$ = $3; }  { fprintf(pfile, " %s = %d;\n", $1, $3); }
     |   { yyerror("assignment failed."); exit(1); }
     ;
 
@@ -189,5 +189,5 @@ void print_identifiers()
     {
         fprintf(pfile, "%s, ", identifiers[i]);
     }
-    fprintf(pfile, "%s;", identifiers[0]);
+    fprintf(pfile, "%s;\n", identifiers[0]);
 }
