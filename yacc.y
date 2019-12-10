@@ -7,8 +7,13 @@ void yyerror(const char *err);
 int yylex();
 int yyparse();
 int yywrap() { return 1; }
+void push_identifiers(char *);
+void print_identifiers();
 
-int main() { yyparse(); }
+FILE * pfile;
+char identifiers[14][10];
+int identifier_count=0;
+// int main() { yyparse(); }
 %}
 
 //Various keywords
@@ -64,12 +69,12 @@ var: VAR   { printf("var returning\n"); }
     |   { yyerror("keyword 'VAR' expected."); exit(1); }
     ;
 
-dec_list: dec colon type    { printf("dec_list returning\n"); }
+dec_list: dec colon type    { printf("dec_list returning\n"); } { print_identifiers(); }
     ;
 
-dec:    IDENTIFIER comma dec    { printf("dec [%s]\n", $3); }
+dec:    IDENTIFIER comma dec    { printf("dec [%s]\n", $3); } { push_identifiers($1); }
     |   IDENTIFIER IDENTIFIER   { yyerror("two identifiers without comma. ',' expected."); exit(1); }
-    |   IDENTIFIER   { printf("identifier [%s]\n", $1); }
+    |   IDENTIFIER   { printf("identifier [%s]\n", $1); } { $$ = $1; push_identifiers($1);}
     ;
 
 colon: COLON   { printf("colon returning\n"); }
@@ -150,3 +155,40 @@ end: END { printf("END. returning\n"); }
     ;
 
 %%
+int main() 
+{ 
+    
+    pfile=fopen("abc13.cpp", "w");
+    if(!pfile)
+    {
+        perror("Error opening file.\n");
+    }
+    else
+    {
+        fprintf(pfile, "#include <iostream>\nusing namespace std;\nint main()\n{\n");
+    }
+    
+    yyparse();
+
+    fprintf(pfile, "\n return 0;\n}");
+    fclose(pfile);
+}
+
+void push_identifiers(char * str)
+{
+    strcpy(identifiers[identifier_count], str);
+    identifier_count++;
+    printf("Calling push_identifiers %s\n", identifiers[identifier_count]);
+}
+
+void print_identifiers()
+{
+    printf("print_identifiers is called\n");
+    int i;
+    fprintf(pfile, " int ");
+    for(i=0; i<identifier_count-1; i++)
+    {
+        fprintf(pfile, "%s, ", identifiers[i]);
+    }
+    fprintf(pfile, "%s;", identifiers[identifier_count-1]);
+}

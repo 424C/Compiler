@@ -25,4 +25,4 @@ clean:
 	rm yacc.tab.h
 	rm lex.yy.c
 	rm output.txt
-	
+	rm abc13.cpp
