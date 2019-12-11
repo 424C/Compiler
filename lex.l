@@ -33,8 +33,8 @@ string                                      \'.*\'
 {equal}                                         { fprintf(yyout, " %s ", yytext); }
 {operator}                                      { fprintf(yyout, " %s ", yytext); }
 {number}                                        { fprintf(yyout, "%s", yytext); }
-{open_quote}                                    { fprintf(yyout, "%s", yytext); }
-{close_quote}                                   { fprintf(yyout, "%s", yytext); }
+{open_quote}                                    { fprintf(yyout, "'", yytext); }
+{close_quote}                                   { fprintf(yyout, "'", yytext); }
 {open_parenth}                                  { fprintf(yyout, "%s", yytext); }
 {closed_parenth}                                { fprintf(yyout, "%s", yytext); }
 {semicolon}                                     { fprintf(yyout, "%s\n", yytext); }

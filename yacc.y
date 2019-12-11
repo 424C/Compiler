@@ -4,8 +4,9 @@
 #include <string.h>
 
 void yyerror(const char *err);
-int yylex();
-int yyparse();
+//int yylex();
+// int yyparse();
+extern int yylineno;
 int yywrap() { return 1; }
 void push_identifiers(char *);
 void print_identifiers();
@@ -20,12 +21,11 @@ int identifier_count=0;
 %token PROGRAM
 %token VAR
 %token BEG
-%token INTEGER
 %token PRINT
 %token END
 
 //operator tokens
-%token ASSIGNMENT
+%token EQUALS
 %token PLUS
 %token MINUS
 %token DIVIDE
@@ -38,54 +38,40 @@ int identifier_count=0;
 %token CPAREN
 %token SEMICOLON
 %token COMMA
-%token STRING
+%token OQUOTE
+%token CQUOTE
 
 
-%token <number> STATE DIGIT
-%token <string> LETTER IDENTIFIER
-%type <string> pname id dec print output string
-%type <number> assign expr term factor
-
+%token <str> IDENTIFIER QUOTE INTEGER number
+%type <str> assign output stat_list stat pname dec print
+%type <str> type term expr factor
+%left '-' '+'
+%right '*' '/'
 %union {
-    int number;
-    char *string;
+    char *str;
+    int num;
 }
+%start start
 
-%locations
 %%
 
-start: PROGRAM pname semicolon var dec_list semicolon begin stat_list end { printf("start completed\n"); }
+start: PROGRAM pname SEMICOLON VAR dec_list SEMICOLON BEG stat_list end { printf("success\n"); }
     |   { yyerror("keyword 'PROGRAM' expected."); exit(1); }
     ;
 
-pname: id  { printf("pname  \n"); }
+pname: IDENTIFIER  { printf("pname  \n"); $$ = $1; }
     |   { yyerror("program name expected."); exit(1); }
     ;
 
-id: IDENTIFIER { printf("id  : [%s]\n", $1); }
+dec_list: dec COLON type    { printf("dec_list  \n"); } { print_identifiers(); }
+    |   dec type { yyerror(": expected"); exit(1); }
     ;
 
-var: VAR   { printf("var  \n"); }
-    |   { yyerror("keyword 'VAR' expected."); exit(1); }
-    ;
-
-dec_list: dec colon type    { printf("dec_list  \n"); } { print_identifiers(); }
-    ;
-
-dec:    IDENTIFIER comma dec    { printf("dec [%s]\n", $3); } { push_identifiers($1); } 
-    |   IDENTIFIER IDENTIFIER   { yyerror("two identifiers without comma. ',' expected."); exit(1); }
+dec:    IDENTIFIER COMMA dec    { printf("dec [%s]\n", $3); } { push_identifiers($1); } 
     |   IDENTIFIER   { printf("identifier [%s]\n", $1); } { $$ = $1; push_identifiers($1);}
     ;
 
-colon: COLON   { printf("colon  \n"); }
-    |   { yyerror("':' missing."); exit(1); }
-    ;
-
-semicolon: SEMICOLON   { printf("semicolon  \n"); }
-    |   { yyerror("';' missing."); exit(1); }
-    ;
-
-type: INTEGER   { printf("integer  \n"); }
+type: INTEGER { printf("integer  \n"); $$ = $1; }
     |   { yyerror("keyword 'INTEGER' expected."); exit(1); }
     ;
 
@@ -93,61 +79,45 @@ begin: BEG  { printf("BEGIN  \n"); }
     |   { yyerror("keyword 'BEGIN' expected."); exit(1); }
     ;
 
-stat_list: stat semicolon   { printf("stat ;  \n"); }
-    | stat semicolon stat_list  { printf("stat ; stat_list  \n"); }
+stat_list: stat SEMICOLON   { printf("stat ;  \n"); $$ = $1; }
+    | stat SEMICOLON stat_list  { printf("stat ; stat_list  \n"); $$ = $1; }
+    | stat { yyerror("; expected"); exit(1); }
     ;
 
-stat:  print     { printf("stat  \n"); }
-    |  assign    { printf("assign value=%d\n",$1); }
+stat:  print     { printf("stat  \n"); $$ = $1; fprintf(pfile, ";\n"); }
+    |  assign    { printf("assign value=%d\n",$1); $$ = $1; fprintf(pfile, ";\n"); }
     ;
 
-print:   PRINT oparen output cparen   { printf("print  \n");}
+print:   PRINT OPAREN output CPAREN   { printf("print  \n"); $$ = $3; }
+    | PRINT output CPAREN { yyerror("( expected"); exit(1);}
+    | PRINT OPAREN output { yyerror(") expected"); exit(1);}
     ;
 
-oparen: OPAREN { printf("open paren  \n"); }
-    |   { yyerror("'(' missing."); exit(1); }
+output: IDENTIFIER { printf("output id  \n"); check_identifier($1); fprintf(pfile, "cout << %s << endl", $1); }
+    |   QUOTE COMMA IDENTIFIER { printf("string , id  \n"); fprintf(pfile, "cout << %s << %s << endl", $1, $3); }
     ;
 
-cparen: CPAREN { printf("close paren  \n"); }
-    |   { yyerror("')' missing."); exit(1); }
-    ;
-
-output: id  { printf("output id  \n"); check_identifier($1); }
-    |   string comma id { printf("string , id  \n"); }
-    ;
-
-string: STRING { printf("string  \n"); fflush(stdin); }
-    |   { yyerror("invalid string format."); exit(1); }
-    ;
-
-comma: COMMA { printf("comma  \n"); }
-    |   { yyerror("',' expected."); exit(1); }
-    ;
-
-assign: id assignment expr { printf("assign   $1=%s $3=%d\n",$1,$3); $<number>$ = $3; check_identifier($1);}  { fprintf(pfile, " %s = %d;\n", $1, $3); } 
+assign: IDENTIFIER EQUALS expr { printf("assign   $1=%s $3=%d\n",$1,$3); check_identifier($1);}  { fprintf(pfile, " %s = %s", $1, $3); } 
+    |   IDENTIFIER expr { yyerror("operator '=' expected"); }
     |   { yyerror("assignment failed."); exit(1); }
     ;
 
-assignment: ASSIGNMENT { printf("assignment  \n"); }
-    |   { yyerror("operator '=' missing."); exit(1); }
+expr:  term         { printf("expr term  \n"); $$ = $1; }
+    | expr PLUS term { printf("expr + term  \n"); $$ = $1; strcat($$, " + "); strcat($$, $3); }
+    | expr MINUS term { printf("expr - term  \n"); $$ = $1; strcat($$, " - "); strcat($$, $3); }
+    | { yyerror("= expected"); exit(1);}
     ;
 
-expr:  term         { printf("expr term  \n"); }
-    | expr PLUS term { printf("expr + term  \n"); $$ = $1 + $3; }
-    | expr MINUS term { printf("expr - term  \n"); }
+term:   term TIMES factor { printf("term * factor  \n"); $$ = $1; strcat($$, " * "); strcat($$, $3); }
+    |   term DIVIDE factor { printf("term / factor  \n"); $$ = $1; strcat($$, " / "); strcat($$, $3);}
+    |   factor          { printf("factor  \n"); $$ = $1;}
     ;
 
-term:   term TIMES factor { printf("term * factor  \n"); $$ = $1 * $3; }
-    |   term DIVIDE factor { printf("term / factor  \n"); }
-    |   factor          { printf("factor  \n"); }
-    ;
-
-factor: id          { printf("factor id  \n"); check_identifier($1); }
-    |   number      { printf("factor number  \n"); }
-    |   '(' expr ')'{ printf("( expr )  \n"); }
-    ;
-
-number: DIGIT   { printf("number DIGIT  \n"); }
+factor: IDENTIFIER         { printf("factor id  \n"); $$ = $1; check_identifier($1); }
+    |   number      { printf("factor number  \n"); $$ = $1;  }
+    |   OPAREN expr CPAREN { printf("( expr )  \n"); $$ = $2; }
+    |   expr OPAREN { yyerror("cparen expected"); exit(1);}
+    |   CPAREN expr { yyerror("oparen expected"); exit(1);}
     ;
 
 end: END { printf("END.  \n"); }

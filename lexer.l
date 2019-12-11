@@ -11,11 +11,10 @@ VAR                     return VAR;
 BEGIN                   return BEG;
 PRINT                   return PRINT;
 INTEGER                 return INTEGER;
-‘.*’					return STRING;
 "END."                  return END;
 :                       return COLON;
 ;                       return SEMICOLON;
-=                       return ASSIGNMENT;
+=                       return EQUALS;
 "+"                     return PLUS;
 "-"                     return MINUS;
 "/"                     return DIVIDE;
@@ -23,13 +22,22 @@ INTEGER                 return INTEGER;
 "("                     return OPAREN;
 ")"                     return CPAREN;
 ","                     return COMMA;
+'(\\.|[^\\'])*'     { 
+                      int len = strlen(yytext); 
+                      yytext[0] = '\"'; 
+                      yytext[len - 1] = '\"'; 
+                      yylval.str = strdup(yytext); 
+                      return QUOTE;
+                    }  
+\‘                      return OQUOTE;
+\’                      return CQUOTE;
 
-[0-9]+                  yylval.number=atoi(yytext); return DIGIT;
-[a-zA-Z_][a-zA-Z0-9]*   yylval.string = strdup(yytext); return IDENTIFIER;
+[0-9]+                  yylval.str = strdup(yytext); return number;
+[a-f][a-f0-9_]*   yylval.str = strdup(yytext); return IDENTIFIER;
 '.*'|[ \t]+|\n          ;
 %%
 
 void yyerror(char *err)
 {
-    fprintf(stderr, "Error: %s on line: %d.\n", err, yylineno);
+    fprintf(stderr, "ERROR LINE %d: %s\n", yylineno, err);
 }
