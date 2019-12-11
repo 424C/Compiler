@@ -9,6 +9,7 @@ int yyparse();
 int yywrap() { return 1; }
 void push_identifiers(char *);
 void print_identifiers();
+void check_identifier(char *);
 
 FILE * pfile;
 char identifiers[14][10];
@@ -111,7 +112,7 @@ cparen: CPAREN { printf("close paren  \n"); }
     |   { yyerror("')' missing."); exit(1); }
     ;
 
-output: id  { printf("output id  \n"); } 
+output: id  { printf("output id  \n"); check_identifier($1); }
     |   string comma id { printf("string , id  \n"); }
     ;
 
@@ -123,7 +124,7 @@ comma: COMMA { printf("comma  \n"); }
     |   { yyerror("',' expected."); exit(1); }
     ;
 
-assign: id assignment expr { printf("assign   $1=%s $3=%d\n",$1,$3); $<number>$ = $3; }  { fprintf(pfile, " %s = %d;\n", $1, $3); }
+assign: id assignment expr { printf("assign   $1=%s $3=%d\n",$1,$3); $<number>$ = $3; check_identifier($1);}  { fprintf(pfile, " %s = %d;\n", $1, $3); } 
     |   { yyerror("assignment failed."); exit(1); }
     ;
 
@@ -141,7 +142,7 @@ term:   term TIMES factor { printf("term * factor  \n"); $$ = $1 * $3; }
     |   factor          { printf("factor  \n"); }
     ;
 
-factor: id          { printf("factor id  \n"); }
+factor: id          { printf("factor id  \n"); check_identifier($1); }
     |   number      { printf("factor number  \n"); }
     |   '(' expr ')'{ printf("( expr )  \n"); }
     ;
@@ -182,7 +183,6 @@ void push_identifiers(char * str)
 
 void print_identifiers()
 {
-    printf("print_identifiers is called\n");
     int i;
     fprintf(pfile, " int ");
     for(i=identifier_count-1; i>0; i--)
@@ -190,4 +190,22 @@ void print_identifiers()
         fprintf(pfile, "%s, ", identifiers[i]);
     }
     fprintf(pfile, "%s;\n", identifiers[0]);
+}
+
+void check_identifier(char * str)
+{
+    int isValid=1;
+    for(int i=0; i<identifier_count; i++)
+    {
+        if(strcmp(identifiers[i], str)==0)
+        {
+            isValid=0;
+        }
+    }
+
+    if(isValid==1)
+    {
+        yyerror(strcat(str, " unknown identifier"));
+        exit(1);
+    }
 }
