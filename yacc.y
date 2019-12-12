@@ -4,8 +4,7 @@
 #include <string.h>
 
 void yyerror(const char *err);
-//int yylex();
-// int yyparse();
+extern int yylex();
 extern int yylineno;
 int yywrap() { return 1; }
 void push_identifiers(char *);
@@ -45,17 +44,16 @@ int identifier_count=0;
 %token <str> IDENTIFIER QUOTE INTEGER number
 %type <str> assign output stat_list stat pname dec print
 %type <str> type term expr factor
-%left '-' '+'
-%right '*' '/'
+
 %union {
     char *str;
     int num;
 }
-%start start
+
 
 %%
 
-start: PROGRAM pname SEMICOLON VAR dec_list SEMICOLON BEG stat_list end { printf("success\n"); }
+start: PROGRAM pname SEMICOLON VAR dec_list SEMICOLON begin stat_list end { printf("success\n"); }
     |   { yyerror("keyword 'PROGRAM' expected."); exit(1); }
     ;
 
@@ -75,7 +73,7 @@ type: INTEGER { $$ = $1; }
     |   { yyerror("keyword 'INTEGER' expected."); exit(1); }
     ;
 
-begin: BEG  { printf("BEGIN  \n"); }
+begin: BEG {  }
     |   { yyerror("keyword 'BEGIN' expected."); exit(1); }
     ;
 
@@ -93,8 +91,8 @@ print:   PRINT OPAREN output CPAREN   { $$ = $3; }
     | PRINT OPAREN output { yyerror(") expected"); exit(1);}
     ;
 
-output: IDENTIFIER { check_identifier($1); fprintf(pfile, "cout << %s << endl", $1); }
-    |   QUOTE COMMA IDENTIFIER { fprintf(pfile, "cout << %s << %s << endl", $1, $3); }
+output: IDENTIFIER { check_identifier($1); fprintf(pfile, " cout << %s << endl", $1); }
+    |   QUOTE COMMA IDENTIFIER { fprintf(pfile, " cout << %s << %s << endl", $1, $3); }
     ;
 
 assign: IDENTIFIER EQUALS expr { check_identifier($1);}  { fprintf(pfile, " %s = %s", $1, $3); } 
