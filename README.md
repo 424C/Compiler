@@ -1,6 +1,8 @@
 # final-project
-Compilers
+Compiler built using Flex and Bison.
 
+
+## Instructions
 use the makefile to test the compiler.
 
 1. make file (create the output.txt)
